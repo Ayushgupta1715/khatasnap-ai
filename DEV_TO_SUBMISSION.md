@@ -12,7 +12,10 @@ description: "An offline-first, zero-screen nature trail audio AI companion buil
 **Project Name:** TrailWhisper  
 **Tagline:** *Keep Eyes on the Canopy. Phone in the Pocket.*  
 **Live Demo:** [https://ayush-trailwhisper.surge.sh](https://ayush-trailwhisper.surge.sh)  
+**Video Walkthrough:** [https://youtu.be/p9flaxXcBRI](https://youtu.be/p9flaxXcBRI)  
 **Repository:** [https://github.com/Ayushgupta1715/trailwhisper](https://github.com/Ayushgupta1715/trailwhisper)  
+
+{% youtube p9flaxXcBRI %}
 
 ---
 

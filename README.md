@@ -1,7 +1,10 @@
 # 🌿 TrailWhisper — "Keep Eyes on the Canopy. Phone in the Pocket."
 
 **Submission for Hacktoberfest 2026 Week 1 Challenge: "Touch Grass"**  
-Challenge URL: [https://dev.to/challenges/hacktoberfest-week1-2026-10-05](https://dev.to/challenges/hacktoberfest-week1-2026-10-05)
+- **Live Demo:** [https://ayush-trailwhisper.surge.sh](https://ayush-trailwhisper.surge.sh)  
+- **YouTube Demo Video:** [https://youtu.be/p9flaxXcBRI](https://youtu.be/p9flaxXcBRI)  
+- **Repository:** [https://github.com/Ayushgupta1715/trailwhisper](https://github.com/Ayushgupta1715/trailwhisper)  
+- **Challenge URL:** [https://dev.to/challenges/hacktoberfest-week1-2026-10-05](https://dev.to/challenges/hacktoberfest-week1-2026-10-05)
 
 ---
 
