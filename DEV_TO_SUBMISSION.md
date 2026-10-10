@@ -12,7 +12,7 @@ description: "An offline-first, zero-screen nature trail audio AI companion buil
 **Project Name:** TrailWhisper  
 **Tagline:** *Keep Eyes on the Canopy. Phone in the Pocket.*  
 **Challenge Track:** Hacktoberfest 2026 Week 1: "Touch Grass"  
-**Repository:** [https://github.com/YOUR_GITHUB_USERNAME/trailwhisper](https://github.com/YOUR_GITHUB_USERNAME/trailwhisper)  
+**Repository:** [https://github.com/Ayushgupta1715/trailwhisper](https://github.com/Ayushgupta1715/trailwhisper)  
 
 ---
 
@@ -73,7 +73,7 @@ Here is why proprietary cloud models fail on trails, and why open weights win:
 ## 🚀 Running Locally
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/trailwhisper.git
+git clone https://github.com/Ayushgupta1715/trailwhisper.git
 cd trailwhisper
 npm install
 npm run dev
