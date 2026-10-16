@@ -1,393 +1,335 @@
 import { useState, useEffect } from 'react';
-import { Header } from './components/Header';
-import { Hero } from './components/Hero';
-import { AudioSpectrum } from './components/AudioSpectrum';
-import { ActiveBirdDetectionCard } from './components/ActiveBirdDetectionCard';
-import { SpeciesCard } from './components/SpeciesCard';
-import { SpeciesDetailModal } from './components/SpeciesDetailModal';
-import { TrailBingo } from './components/TrailBingo';
-import { TrailJournal } from './components/TrailJournal';
-import { PenaltyShield } from './components/PenaltyShield';
-import { SilentJournal } from './components/SilentJournal';
-import { OpenWeightsDeepDive } from './components/OpenWeightsDeepDive';
-import { REGIONAL_SPECIES, INITIAL_BINGO_QUESTS } from './data/species';
-import { Species, BingoItem, SavedSighting, SystemOfflineStatus } from './types/trail';
-import { audioEngine } from './utils/audio';
-import { Sparkles, Radio } from 'lucide-react';
-
-const JOURNAL_STORAGE_KEY = 'trailwhisper_saved_sightings_v1';
+import { KhataHeader } from './components/KhataHeader';
+import { KhataScanner } from './components/KhataScanner';
+import { CustomerLedger } from './components/CustomerLedger';
+import { PaymentReminders } from './components/PaymentReminders';
+import { RecoveryDashboard } from './components/RecoveryDashboard';
+import { PrivacyLabModal } from './components/PrivacyLabModal';
+import { Customer, DashboardMetrics, PaymentReminder, ReminderStatus, Transaction } from './types/khata';
+import { INITIAL_CUSTOMERS, INITIAL_REMINDERS, INITIAL_TRANSACTIONS } from './data/mockKhata';
+import { KhataAIService } from './services/khataAIService';
+import { CheckCircle2 } from 'lucide-react';
 
 export function App() {
-  // Navigation tabs: 'ear-first' | 'quests' | 'journal' | 'open-weights'
-  const [activeTab, setActiveTab] = useState<'ear-first' | 'quests' | 'journal' | 'open-weights'>('ear-first');
-
-  // Network status (Real + Simulated Dead-Zone toggle)
-  const [isSystemOnline, setIsSystemOnline] = useState<boolean>(navigator.onLine);
-  const [isSimulatedOffline, setIsSimulatedOffline] = useState<boolean>(false);
-  const isOnline = isSystemOnline && !isSimulatedOffline;
-
-  // Audio Engine & Live Listening State
-  const [isListening, setIsListening] = useState<boolean>(false);
-  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
-  const [audioStatusText, setAudioStatusText] = useState<string>('MICROPHONE DORMANT');
-  const [hasPermissionError, setHasPermissionError] = useState<boolean>(false);
-  const [lastDetectionMarker, setLastDetectionMarker] = useState<string | null>(null);
-
-  // Screen Time & Anti-Gaze Shield Tracking
-  const [screenTimeSeconds, setScreenTimeSeconds] = useState<number>(0);
-  const [walkDurationSeconds, setWalkDurationSeconds] = useState<number>(0);
-  const [continuousGazeSeconds, setContinuousGazeSeconds] = useState<number>(0);
-  const [gazeThreshold] = useState<number>(30); // 30s threshold
-
-  // Species Data & Detections
-  const [detections, setDetections] = useState<Species[]>(REGIONAL_SPECIES.slice(0, 4));
-  const [activeDetection, setActiveDetection] = useState<Species>(REGIONAL_SPECIES[0]);
-  const [selectedDetailSpecies, setSelectedDetailSpecies] = useState<Species | null>(null);
-  const [bingoItems, setBingoItems] = useState<BingoItem[]>(INITIAL_BINGO_QUESTS);
-
-  // Persistent Offline Nature Journal Sightings
-  const [savedSightings, setSavedSightings] = useState<SavedSighting[]>(() => {
-    try {
-      const stored = localStorage.getItem(JOURNAL_STORAGE_KEY);
-      if (stored) return JSON.parse(stored);
-    } catch (e) {
-      console.warn('Could not read journal from localStorage:', e);
+  // Persistent or initial state
+  const [customers, setCustomers] = useState<Customer[]>(() => {
+    const saved = localStorage.getItem('khatasnap_customers');
+    if (saved) {
+      try { return JSON.parse(saved); } catch {}
     }
-    // Default initial sighting (Asian Koel)
-    return [
-      {
-        id: 'initial-koel-sighting',
-        species: REGIONAL_SPECIES[0],
-        savedAt: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
-        verifiedOffline: true
-      }
-    ];
+    return INITIAL_CUSTOMERS;
   });
 
-  // Save sightings to localStorage whenever updated
-  useEffect(() => {
-    try {
-      localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(savedSightings));
-    } catch (e) {
-      console.warn('Could not save journal to localStorage:', e);
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    const saved = localStorage.getItem('khatasnap_transactions');
+    if (saved) {
+      try { return JSON.parse(saved); } catch {}
     }
-  }, [savedSightings]);
+    return INITIAL_TRANSACTIONS;
+  });
 
-  // Real-world network listeners
+  const [reminders, setReminders] = useState<PaymentReminder[]>(() => {
+    const saved = localStorage.getItem('khatasnap_reminders');
+    if (saved) {
+      try { return JSON.parse(saved); } catch {}
+    }
+    return INITIAL_REMINDERS;
+  });
+
+  const [activeTab, setActiveTab] = useState<'scanner' | 'customers' | 'reminders' | 'dashboard'>('scanner');
+  const [showPrivacyLab, setShowPrivacyLab] = useState<boolean>(false);
+  const [isOllamaConnected, setIsOllamaConnected] = useState<boolean>(false);
+  const [preselectedCustomer, setPreselectedCustomer] = useState<Customer | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Sync to localStorage
   useEffect(() => {
-    const handleOnline = () => setIsSystemOnline(true);
-    const handleOffline = () => setIsSystemOnline(false);
+    localStorage.setItem('khatasnap_customers', JSON.stringify(customers));
+  }, [customers]);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+  useEffect(() => {
+    localStorage.setItem('khatasnap_transactions', JSON.stringify(transactions));
+  }, [transactions]);
 
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
+  useEffect(() => {
+    localStorage.setItem('khatasnap_reminders', JSON.stringify(reminders));
+  }, [reminders]);
+
+  // Check Ollama on launch
+  useEffect(() => {
+    KhataAIService.checkOllamaHealth().then((res) => {
+      setIsOllamaConnected(res.running);
+    });
   }, []);
 
-  // Screen Time & Anti-Gaze Tickers
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        setScreenTimeSeconds((prev) => prev + 1);
-        setContinuousGazeSeconds((prev) => prev + 1);
-      }
-      setWalkDurationSeconds((prev) => prev + 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const handlePocketPhone = () => {
-    setContinuousGazeSeconds(0);
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Live Audio Detection and Energy Trigger
-  const handleToggleListening = async () => {
-    if (isListening) {
-      audioEngine.stopMicrophone();
-      setIsListening(false);
-      setAnalyser(null);
-      setAudioStatusText('MICROPHONE DORMANT');
-      setHasPermissionError(false);
-    } else {
-      try {
-        setAudioStatusText('REQUESTING MICROPHONE ACCESS...');
-        const { analyser: audioAnalyser } = await audioEngine.startMicrophone((rms, peakFreq) => {
-          // Acoustic energy peak detection:
-          // If natural sound exceeds energy threshold and high frequency (>1 kHz), trigger bird cue
-          if (rms > 0.35 && peakFreq > 1000) {
-            setAudioStatusText(`ANALYZING ACOUSTIC ENERGY: ${Math.round(peakFreq)} Hz PEAK`);
-          }
-        });
-        
-        setAnalyser(audioAnalyser);
-        setIsListening(true);
-        setHasPermissionError(false);
-        setAudioStatusText('LISTENING FOR BIRD CALLS (LIVE FFT ACTIVE)');
-        
-        // Gentle initial Solfeggio 528 Hz announcement chime
-        audioEngine.playSolfeggioChime(528, 2.0);
-      } catch (err) {
-        console.warn('Microphone permission or hardware error:', err);
-        setHasPermissionError(true);
-        setAudioStatusText('MICROPHONE ACCESS DENIED / NOT AVAILABLE');
-        setIsListening(false);
-      }
-    }
+  // Compute live dashboard metrics
+  const totalOutstanding = customers.reduce((sum, c) => sum + Math.max(0, c.currentBalance), 0);
+  const customersWithPending = customers.filter((c) => c.currentBalance > 0).length;
+  const paymentsReceivedThisMonth = transactions
+    .filter((t) => t.type === 'payment' && t.status === 'verified')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const totalRemindersPending = reminders.filter((r) => r.status !== 'paid').length;
+  const recordsNeedingVerification = transactions.filter((t) => t.needsReview).length;
+
+  const metrics: DashboardMetrics = {
+    totalOutstanding,
+    customersWithPending,
+    paymentsReceivedThisMonth,
+    recordsNeedingVerification,
+    totalCustomers: customers.length,
+    totalRemindersPending,
   };
 
-  // Trigger Bird Identification (Connected to real audio flow or simulated trigger)
-  const handleTriggerDetection = (speciesToTrigger?: Species) => {
-    const chosenSpecies = speciesToTrigger || (() => {
-      const nextIndex = (detections.length) % REGIONAL_SPECIES.length;
-      return REGIONAL_SPECIES[nextIndex];
-    })();
-
-    // Generate actual timestamp and calculated confidence
-    const actualTimestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const calculatedConfidence = Number((0.85 + Math.random() * 0.12).toFixed(2));
-
-    const timestamped: Species = {
-      ...chosenSpecies,
-      timestamp: actualTimestamp,
-      confidence: calculatedConfidence,
-      latencyMs: Math.floor(95 + Math.random() * 60)
-    };
-
-    setActiveDetection(timestamped);
-    setDetections((prev) => [timestamped, ...prev.filter(d => d.id !== timestamped.id)]);
-    
-    // Waveform detection marker
-    setLastDetectionMarker(timestamped.commonName);
-    setTimeout(() => setLastDetectionMarker(null), 3500);
-
-    // Whisper directional sentence into headphones
-    audioEngine.whisperSentence(timestamped.whisperText);
-  };
-
-  // Save Sighting to Nature Journal
-  const handleSaveSighting = (species: Species) => {
-    const isAlreadySaved = savedSightings.some(s => s.species.id === species.id);
-    if (isAlreadySaved) {
-      // Toggle off / remove
-      setSavedSightings(prev => prev.filter(s => s.species.id !== species.id));
-    } else {
-      // Add new record
-      const newSighting: SavedSighting = {
-        id: `sighting-${Date.now()}-${species.id}`,
-        species: species,
-        savedAt: new Date().toISOString(),
-        verifiedOffline: true
-      };
-      setSavedSightings(prev => [newSighting, ...prev]);
-      audioEngine.playSolfeggioChime(639, 1.2); // harmonic feedback chime
-    }
-  };
-
-  // Remove sighting from journal
-  const handleRemoveSighting = (id: string) => {
-    setSavedSightings(prev => prev.filter(s => s.id !== id));
-  };
-
-  // Clear all sightings
-  const handleClearAllSightings = () => {
-    if (window.confirm('Clear all offline sightings in your trail journal?')) {
-      setSavedSightings([]);
-    }
-  };
-
-  // Toggle Bingo Item
-  const handleToggleBingoItem = (id: string) => {
-    setBingoItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, completed: !item.completed } : item
+  const handleReconcileCustomer = (customerId: string, targetBalance: number) => {
+    setCustomers((prev) =>
+      prev.map((c) =>
+        c.id === customerId
+          ? { ...c, currentBalance: targetBalance, hasDiscrepancy: false, discrepancyNote: undefined }
+          : c
       )
+    );
+    showToast(`Account auto-reconciled to ₹${targetBalance.toLocaleString('en-IN')}`);
+  };
+
+  // Handle batch approval from scanner
+  const handleApproveTransactions = (approvedEntries: Transaction[]) => {
+    // 1. Mark status as verified
+    const verifiedEntries = approvedEntries.map((e) => ({
+      ...e,
+      status: 'verified' as const,
+      needsReview: false,
+    }));
+
+    // 2. Add to transaction list
+    setTransactions((prev) => [...verifiedEntries, ...prev]);
+
+    // 3. Update customer balances deterministically
+    setCustomers((prevCustomers) => {
+      const updated = [...prevCustomers];
+
+      verifiedEntries.forEach((entry) => {
+        let cust = updated.find(
+          (c) => c.name.toLowerCase() === entry.customerName.toLowerCase() || (entry.phone && c.phone === entry.phone)
+        );
+
+        if (!cust) {
+          // Auto create customer account if new
+          const newCust: Customer = {
+            id: `cust-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            name: entry.customerName,
+            phone: entry.phone || '+91 98000 00000',
+            totalCredit: entry.type === 'credit' ? entry.amount : 0,
+            totalPaid: entry.type === 'payment' ? entry.amount : 0,
+            currentBalance: entry.type === 'credit' ? entry.amount : -entry.amount,
+            lastTransactionDate: entry.date,
+            risk: 'low',
+          };
+          updated.push(newCust);
+        } else {
+          // Update existing customer math
+          if (entry.type === 'credit') {
+            cust.totalCredit += entry.amount;
+          } else {
+            cust.totalPaid += entry.amount;
+          }
+          cust.currentBalance = cust.totalCredit - cust.totalPaid;
+          cust.lastTransactionDate = entry.date;
+          if (cust.currentBalance > 2000) {
+            cust.risk = 'high';
+          } else if (cust.currentBalance > 1000) {
+            cust.risk = 'moderate';
+          } else {
+            cust.risk = 'low';
+          }
+        }
+      });
+
+      return updated;
+    });
+
+    showToast(`✅ ${verifiedEntries.length} entries verified and saved to ledger!`);
+    setActiveTab('customers');
+  };
+
+  // Add individual manual transaction
+  const handleAddTransaction = (
+    customerId: string,
+    txData: Omit<Transaction, 'id' | 'status' | 'confidence' | 'needsReview'>
+  ) => {
+    const newTx: Transaction = {
+      ...txData,
+      id: `manual-tx-${Date.now()}`,
+      status: 'verified',
+      confidence: 1.0,
+      needsReview: false,
+    };
+
+    setTransactions((prev) => [newTx, ...prev]);
+
+    setCustomers((prev) =>
+      prev.map((c) => {
+        if (c.id === customerId) {
+          const totalCredit = txData.type === 'credit' ? c.totalCredit + txData.amount : c.totalCredit;
+          const totalPaid = txData.type === 'payment' ? c.totalPaid + txData.amount : c.totalPaid;
+          return {
+            ...c,
+            totalCredit,
+            totalPaid,
+            currentBalance: totalCredit - totalPaid,
+            lastTransactionDate: txData.date,
+          };
+        }
+        return c;
+      })
+    );
+
+    showToast(`Recorded ₹${txData.amount} for ${txData.customerName}`);
+  };
+
+  // Add new customer
+  const handleAddNewCustomer = (name: string, phone: string, address?: string) => {
+    const newCust: Customer = {
+      id: `cust-${Date.now()}`,
+      name,
+      phone,
+      address,
+      totalCredit: 0,
+      totalPaid: 0,
+      currentBalance: 0,
+      lastTransactionDate: new Date().toISOString().split('T')[0],
+      risk: 'low',
+    };
+    setCustomers((prev) => [newCust, ...prev]);
+    showToast(`Registered new customer: ${name}`);
+  };
+
+  // When customer is marked paid from reminder
+  const handleRecordFullPayment = (customerId: string, amount: number) => {
+    const cust = customers.find((c) => c.id === customerId);
+    if (!cust) return;
+
+    handleAddTransaction(customerId, {
+      customerId,
+      customerName: cust.name,
+      phone: cust.phone,
+      date: new Date().toISOString().split('T')[0],
+      description: 'Full payment settlement received',
+      amount,
+      type: 'payment',
+    });
+
+    showToast(`🎉 ₹${amount} received from ${cust.name}! Account cleared.`);
+  };
+
+  // Update reminder status
+  const handleUpdateReminderStatus = (reminderId: string, newStatus: ReminderStatus) => {
+    setReminders((prev) =>
+      prev.map((r) => (r.id === reminderId ? { ...r, status: newStatus } : r))
     );
   };
 
-  // System Offline Status Indicator
-  const systemOfflineStatus: SystemOfflineStatus = {
-    modelReady: true,
-    audioProcessing: isListening ? 'On-device' : 'Disabled',
-    networkStatus: isOnline ? 'Connected' : 'Disconnected (Dead-Zone)',
-    savedSightingsCount: savedSightings.length
+  const handleCreateReminder = (reminder: PaymentReminder) => {
+    setReminders((prev) => [reminder, ...prev]);
+    showToast(`Reminder saved for ${reminder.customerName}`);
+  };
+
+  const handleOpenReminderForCustomer = (cust: Customer) => {
+    setPreselectedCustomer(cust);
+    setActiveTab('reminders');
   };
 
   return (
-    <div className="min-h-screen bg-[#070D0A] text-[#F4F7F2] font-sans">
-      
-      {/* 1. Header (Properly sticky with h-16, z-[60], and responsive mobile drawer) */}
-      <Header
-        isOnline={isOnline}
-        screenTimeSeconds={screenTimeSeconds}
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-emerald-500/20 selection:text-emerald-800">
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-slate-700 animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Header */}
+      <KhataHeader
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        isListening={isListening}
-        offlineStatus={systemOfflineStatus}
-        savedSightingsCount={savedSightings.length}
+        metrics={metrics}
+        onOpenPrivacyLab={() => setShowPrivacyLab(true)}
+        onNewScan={() => setActiveTab('scanner')}
+        isOllamaConnected={isOllamaConnected}
       />
 
-      {/* 2. Main Content Container (pt-24 ensures zero overlap with header) */}
-      <main className="max-w-[1100px] mx-auto px-4 sm:px-6 pt-24 pb-16">
-        
-        {/* Anti-Screen Penalty Shield Modal */}
-        <PenaltyShield
-          continuousGazeSeconds={continuousGazeSeconds}
-          thresholdSeconds={gazeThreshold}
-          onDismiss={handlePocketPhone}
-        />
-
-        {/* Species Detail Modal Sheet */}
-        <SpeciesDetailModal
-          species={selectedDetailSpecies}
-          onClose={() => setSelectedDetailSpecies(null)}
-          onSaveSighting={handleSaveSighting}
-          isSaved={selectedDetailSpecies ? savedSightings.some(s => s.species.id === selectedDetailSpecies.id) : false}
-        />
-
-        {/* Hero Section */}
-        <Hero
-          onStartListening={handleToggleListening}
-          isListening={isListening}
-          onSimulateOffline={() => setIsSimulatedOffline(!isSimulatedOffline)}
-          isSimulatedOffline={isSimulatedOffline}
-        />
-
-        {/* TAB 1: Ear-First View */}
-        {activeTab === 'ear-first' && (
-          <div className="space-y-8">
-            
-            {/* Live Audio Monitor Section */}
-            <div className="bg-[#0E1712] rounded-2xl border border-[#1B2E23] p-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-[#F4F7F2] flex items-center gap-2">
-                    <Radio className={`w-4 h-4 ${isListening ? 'text-[#00C896] animate-pulse' : 'text-[#97A89D]'}`} />
-                    <span>Live Trail Ambient Acoustic Monitor</span>
-                  </h2>
-                  <p className="text-xs text-[#97A89D]">
-                    {isListening 
-                      ? 'Real-time microphone input streaming into on-device AnalyserNode & FFT engine.'
-                      : 'Click "Start Ear-First Walk" above to connect microphone and listen for biophonic calls.'}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleTriggerDetection()}
-                    className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#182820] text-[#00C896] hover:bg-[#20372A] transition-colors border border-[#00C896]/30"
-                    title="Simulate or force audio model inference trigger"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Identify Next Call</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Dynamic Oscilloscope + Spectrum Visualizer */}
-              <AudioSpectrum 
-                analyser={analyser} 
-                isListening={isListening} 
-                statusText={audioStatusText}
-                lastDetectionSpecies={lastDetectionMarker}
-                hasPermissionError={hasPermissionError}
-              />
-            </div>
-
-            {/* Active Bird Detection Card (Highlighted with save, call audio & explanations) */}
-            <ActiveBirdDetectionCard
-              detection={activeDetection}
-              onSaveSighting={handleSaveSighting}
-              isSaved={savedSightings.some(s => s.species.id === activeDetection.id)}
-              onViewDetails={(sp) => setSelectedDetailSpecies(sp)}
-            />
-
-            {/* Regional Indo-Gangetic Birds Grid */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-bold text-[#F4F7F2]">
-                    Indo-Gangetic Native Bio-Acoustic Grounding
-                  </h3>
-                  <p className="text-xs text-[#97A89D]">
-                    Click any species card to inspect identification acoustics, verify confidence, or preview calls.
-                  </p>
-                </div>
-                <span className="text-xs font-mono text-[#00C896] bg-[#0E1712] px-2.5 py-1 rounded-lg border border-[#1B2E23] tabular-nums">
-                  {detections.length} Classified
-                </span>
-              </div>
-
-              {/* Responsive Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {detections.map((sp) => (
-                  <SpeciesCard 
-                    key={sp.id} 
-                    species={sp} 
-                    isRecent={activeDetection?.id === sp.id}
-                    onSelectDetails={(item) => setSelectedDetailSpecies(item)}
-                  />
-                ))}
-              </div>
-            </div>
-
-          </div>
+      {/* Main Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {activeTab === 'scanner' && (
+          <KhataScanner
+            onApproveTransactions={handleApproveTransactions}
+            isOllamaConnected={isOllamaConnected}
+          />
         )}
 
-        {/* TAB 2: Quests (Trail Bingo) */}
-        {activeTab === 'quests' && (
-          <div className="space-y-6">
-            <TrailBingo items={bingoItems} onToggle={handleToggleBingoItem} />
-          </div>
+        {activeTab === 'customers' && (
+          <CustomerLedger
+            customers={customers}
+            transactions={transactions}
+            onAddTransaction={handleAddTransaction}
+            onOpenReminderModal={handleOpenReminderForCustomer}
+            onAddNewCustomer={handleAddNewCustomer}
+            onReconcileCustomer={handleReconcileCustomer}
+          />
         )}
 
-        {/* TAB 3: My Trail Journal */}
-        {activeTab === 'journal' && (
-          <div className="space-y-8">
-            <TrailJournal
-              sightings={savedSightings}
-              onRemoveSighting={handleRemoveSighting}
-              onClearAll={handleClearAllSightings}
-              onQuickAddSample={() => handleSaveSighting(REGIONAL_SPECIES[1])}
-            />
-
-            {/* Silent post-walk presence audit */}
-            <SilentJournal
-              detections={detections}
-              walkDurationSeconds={walkDurationSeconds}
-              screenTimeSeconds={screenTimeSeconds}
-            />
-          </div>
+        {activeTab === 'reminders' && (
+          <PaymentReminders
+            customers={customers}
+            reminders={reminders}
+            onUpdateReminderStatus={handleUpdateReminderStatus}
+            onCreateReminder={handleCreateReminder}
+            onRecordFullPayment={handleRecordFullPayment}
+            preselectedCustomer={preselectedCustomer}
+          />
         )}
 
-        {/* TAB 4: Open Model Deep Dive */}
-        {activeTab === 'open-weights' && (
-          <OpenWeightsDeepDive />
+        {activeTab === 'dashboard' && (
+          <RecoveryDashboard
+            metrics={metrics}
+            customers={customers}
+            transactions={transactions}
+            onNavigateToScanner={() => setActiveTab('scanner')}
+            onNavigateToReminders={() => setActiveTab('reminders')}
+          />
         )}
-
       </main>
 
+      {/* Privacy Lab Modal */}
+      <PrivacyLabModal
+        isOpen={showPrivacyLab}
+        onClose={() => setShowPrivacyLab(false)}
+        isOllamaConnected={isOllamaConnected}
+        onRefreshOllama={() => {
+          KhataAIService.checkOllamaHealth().then((res) => setIsOllamaConnected(res.running));
+        }}
+      />
+
       {/* Footer */}
-      <footer className="border-t border-[#1B2E23] bg-[#070D0A] py-8 text-center text-xs text-[#97A89D]">
-        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="bg-white border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500 no-print">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-[#00C896] font-bold">TrailWhisper</span>
-            <span>—</span>
-            <span>Hacktoberfest 2026 Week 1: &ldquo;Touch Grass&rdquo;</span>
+            <span className="font-bold text-slate-900">KhataSnap AI</span>
+            <span>•</span>
+            <span>Built for DEV Challenge: Hacktoberfest Week 2 (Side Hustle)</span>
           </div>
-          <div className="flex items-center gap-4 text-[11px] font-mono">
-            <span>BirdNET-Mini ONNX</span>
+          <div className="flex items-center gap-4 text-slate-400">
+            <span>Core: <strong>Gemma 2 / Local Open-Weights</strong></span>
             <span>•</span>
-            <span>FloraAcoustic-v2</span>
-            <span>•</span>
-            <span>Zero-Screen Audio First</span>
+            <span>License: <strong>MIT Open Source</strong></span>
           </div>
         </div>
       </footer>
-
     </div>
   );
 }
