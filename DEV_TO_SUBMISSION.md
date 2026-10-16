@@ -147,7 +147,8 @@ KhataSnap was architected to combine **10 official Hacktoberfest sponsored partn
 ## 🛠️ Source Code & Live Links
 
 - **GitHub Repository:** [https://github.com/Ayushgupta1715/khatasnap-ai](https://github.com/Ayushgupta1715/khatasnap-ai)
-- **Live Demo (Web App):** [https://ayushgupta1715.github.io/khatasnap-ai/](https://ayushgupta1715.github.io/khatasnap-ai/)
+- **Live Demo (Hosted on Render):** [https://khatasnap-ai-vden.onrender.com](https://khatasnap-ai-vden.onrender.com)
+- **Alternative Mirror (GitHub Pages):** [https://ayushgupta1715.github.io/khatasnap-ai/](https://ayushgupta1715.github.io/khatasnap-ai/)
 - **Render Deployment Blueprint:** [https://render.com/deploy?repo=https://github.com/Ayushgupta1715/khatasnap-ai](https://render.com/deploy?repo=https://github.com/Ayushgupta1715/khatasnap-ai)
 - **Production Domain:** `khatasnap.tech`
 - **Tech Stack:** React 19, TypeScript, Tailwind CSS, Gemma 2, TabPFN-3.5, ElevenLabs, SerpApi, Sentry, Canvas Confetti, Lucide React.
