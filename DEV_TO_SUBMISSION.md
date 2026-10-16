@@ -2,11 +2,13 @@
 title: "I Built KhataSnap: Turning Handwritten Shopkeeper Ledgers into a Private AI-Powered Digital Khata"
 published: true
 tags: hf26challenge, devchallenge, hacktoberfest, ai
-cover_image: https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=1200&q=80
+cover_image: https://raw.githubusercontent.com/Ayushgupta1715/khatasnap-ai/main/cover.jpg
 canonical_url: https://github.com/Ayushgupta1715/khatasnap-ai
 ---
 
 *This article is submitted for the **Hacktoberfest Open-Source AI Challenge: Week 2 (Side Hustle)**.*
+
+![KhataSnap AI Cover Image](https://raw.githubusercontent.com/Ayushgupta1715/khatasnap-ai/main/cover.jpg)
 
 ---
 

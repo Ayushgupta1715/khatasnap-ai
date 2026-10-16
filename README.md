@@ -3,6 +3,8 @@
 > **Submission for Hacktoberfest 2026 Week 2 Challenge: "Side Hustle"**  
 > *Transforming handwritten credit ledgers into verified digital records with local open-weight AI and automated payment recovery.*
 
+![KhataSnap AI Cover](https://raw.githubusercontent.com/Ayushgupta1715/khatasnap-ai/main/cover.jpg)
+
 🌐 **Live on Render ($200 Bounty Target):** [https://khatasnap-ai-vden.onrender.com](https://khatasnap-ai-vden.onrender.com)  
 🚀 **Alternative Live Mirror:** [https://ayushgupta1715.github.io/khatasnap-ai/](https://ayushgupta1715.github.io/khatasnap-ai/)  
 🏆 **10x Partner Tech Showcase:** Google Gemma 2, Prior Labs TabPFN, Render, ElevenLabs, MongoDB Atlas, SerpApi, Sentry, Mastra, Temporal, .tech Domains
