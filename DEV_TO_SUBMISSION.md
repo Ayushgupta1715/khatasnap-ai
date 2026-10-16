@@ -146,7 +146,7 @@ KhataSnap was architected to combine **10 official Hacktoberfest sponsored partn
 
 ## 🛠️ Source Code & Live Links
 
-- **GitHub Repository:** [https://github.com/Ayushgupta1715/trailwhisper](https://github.com/Ayushgupta1715/trailwhisper)
+- **GitHub Repository:** [https://github.com/Ayushgupta1715/khatasnap-ai](https://github.com/Ayushgupta1715/khatasnap-ai)
 - **Live Deployment on Render:** Configured with `render.yaml` (Deploy Blueprint on [Render.com](https://render.com))
 - **Production Domain:** `khatasnap.tech`
 - **Tech Stack:** React 19, TypeScript, Tailwind CSS, Gemma 2, TabPFN-3.5, ElevenLabs, SerpApi, Sentry, Canvas Confetti, Lucide React.
