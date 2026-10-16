@@ -6,6 +6,7 @@
 ![KhataSnap AI Cover](https://raw.githubusercontent.com/Ayushgupta1715/khatasnap-ai/main/cover.jpg)
 
 🌐 **Live on Render ($200 Bounty Target):** [https://khatasnap-ai-vden.onrender.com](https://khatasnap-ai-vden.onrender.com)  
+🎬 **Watch 1-Minute Demo Video (YouTube):** [https://youtu.be/tZWynmHyiTI](https://youtu.be/tZWynmHyiTI)  
 🚀 **Alternative Live Mirror:** [https://ayushgupta1715.github.io/khatasnap-ai/](https://ayushgupta1715.github.io/khatasnap-ai/)  
 🏆 **10x Partner Tech Showcase:** Google Gemma 2, Prior Labs TabPFN, Render, ElevenLabs, MongoDB Atlas, SerpApi, Sentry, Mastra, Temporal, .tech Domains
 
