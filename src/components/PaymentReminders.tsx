@@ -6,11 +6,14 @@ import {
   Check, 
   Sparkles, 
   MessageSquare, 
-  CheckCircle2
+  CheckCircle2,
+  Volume2,
+  Mic
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Customer, PaymentReminder, ReminderStatus, ReminderTone } from '../types/khata';
 import { KhataAIService } from '../services/khataAIService';
+import { PartnerIntegrationsService } from '../services/partnerIntegrationsService';
 
 interface PaymentRemindersProps {
   customers: Customer[];
@@ -39,8 +42,16 @@ export const PaymentReminders: React.FC<PaymentRemindersProps> = ({
   const [shopName, setShopName] = useState<string>('Shri Ganesh Kirana Store');
   const [generatedMessage, setGeneratedMessage] = useState<string>('');
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
 
   const activeCustomer = customers.find((c) => c.id === selectedCustId);
+
+  const handlePlayVoice = () => {
+    if (!generatedMessage) return;
+    setIsPlayingAudio(true);
+    PartnerIntegrationsService.playElevenLabsVoiceReminder(generatedMessage);
+    setTimeout(() => setIsPlayingAudio(false), 6000);
+  };
 
   // Auto-generate reminder when customer or tone changes
   useEffect(() => {
@@ -230,11 +241,34 @@ export const PaymentReminders: React.FC<PaymentRemindersProps> = ({
             <button
               onClick={handleCopy}
               disabled={!generatedMessage}
-              className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 px-3.5 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+              className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 px-3.5 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-50"
             >
               {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{isCopied ? 'Copied!' : 'Copy'}</span>
             </button>
+          </div>
+
+          {/* ElevenLabs Partner Voice Note Audio Integration */}
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={handlePlayVoice}
+              disabled={!generatedMessage}
+              className={`text-xs font-bold py-1.5 px-3 rounded-lg flex items-center gap-2 border transition cursor-pointer disabled:opacity-50 ${
+                isPlayingAudio
+                  ? 'bg-purple-100 border-purple-400 text-purple-800 animate-pulse'
+                  : 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700'
+              }`}
+            >
+              <Volume2 className="w-3.5 h-3.5 text-purple-600" />
+              <span>{isPlayingAudio ? 'Speaking Voice Reminder...' : 'Play ElevenLabs Voice Note'}</span>
+              <span className="text-[10px] bg-purple-200/80 text-purple-800 font-mono px-1 rounded">Hindi TTS</span>
+            </button>
+
+            <span className="text-[10px] text-slate-400 flex items-center gap-1 font-mono">
+              <Mic className="w-3 h-3 text-purple-500" />
+              ElevenLabs Voice AI
+            </span>
           </div>
         </div>
 

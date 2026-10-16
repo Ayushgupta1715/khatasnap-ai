@@ -5,6 +5,7 @@ import { CustomerLedger } from './components/CustomerLedger';
 import { PaymentReminders } from './components/PaymentReminders';
 import { RecoveryDashboard } from './components/RecoveryDashboard';
 import { PrivacyLabModal } from './components/PrivacyLabModal';
+import { PartnerTechModal } from './components/PartnerTechModal';
 import { Customer, DashboardMetrics, PaymentReminder, ReminderStatus, Transaction } from './types/khata';
 import { INITIAL_CUSTOMERS, INITIAL_REMINDERS, INITIAL_TRANSACTIONS } from './data/mockKhata';
 import { KhataAIService } from './services/khataAIService';
@@ -38,6 +39,7 @@ export function App() {
 
   const [activeTab, setActiveTab] = useState<'scanner' | 'customers' | 'reminders' | 'dashboard'>('scanner');
   const [showPrivacyLab, setShowPrivacyLab] = useState<boolean>(false);
+  const [showPartnerModal, setShowPartnerModal] = useState<boolean>(false);
   const [isOllamaConnected, setIsOllamaConnected] = useState<boolean>(false);
   const [preselectedCustomer, setPreselectedCustomer] = useState<Customer | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -259,6 +261,7 @@ export function App() {
         setActiveTab={setActiveTab}
         metrics={metrics}
         onOpenPrivacyLab={() => setShowPrivacyLab(true)}
+        onOpenPartnerModal={() => setShowPartnerModal(true)}
         onNewScan={() => setActiveTab('scanner')}
         isOllamaConnected={isOllamaConnected}
       />
@@ -313,6 +316,13 @@ export function App() {
         onRefreshOllama={() => {
           KhataAIService.checkOllamaHealth().then((res) => setIsOllamaConnected(res.running));
         }}
+      />
+
+      {/* 10x Partner Tech Showcase Modal */}
+      <PartnerTechModal
+        isOpen={showPartnerModal}
+        onClose={() => setShowPartnerModal(false)}
+        isOllamaConnected={isOllamaConnected}
       />
 
       {/* Footer */}

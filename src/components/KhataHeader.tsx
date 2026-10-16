@@ -7,6 +7,7 @@ interface KhataHeaderProps {
   setActiveTab: (tab: 'scanner' | 'customers' | 'reminders' | 'dashboard') => void;
   metrics: DashboardMetrics;
   onOpenPrivacyLab: () => void;
+  onOpenPartnerModal: () => void;
   onNewScan: () => void;
   isOllamaConnected: boolean;
 }
@@ -16,6 +17,7 @@ export const KhataHeader: React.FC<KhataHeaderProps> = ({
   setActiveTab,
   metrics,
   onOpenPrivacyLab,
+  onOpenPartnerModal,
   onNewScan,
   isOllamaConnected,
 }) => {
@@ -42,13 +44,23 @@ export const KhataHeader: React.FC<KhataHeaderProps> = ({
           </span>
         </div>
 
-        <button
-          onClick={onOpenPrivacyLab}
-          className="flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 font-bold transition cursor-pointer"
-        >
-          <Cpu className="w-3 h-3" />
-          <span>Open Innovation Lab</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onOpenPartnerModal}
+            className="flex items-center gap-1.5 text-[11px] bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 border border-indigo-500/40 px-2 py-0.5 rounded font-bold transition cursor-pointer"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+            <span>10x Partner Tech (10/10)</span>
+          </button>
+
+          <button
+            onClick={onOpenPrivacyLab}
+            className="flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 font-bold transition cursor-pointer"
+          >
+            <Cpu className="w-3 h-3" />
+            <span className="hidden sm:inline">Innovation Lab</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Navbar - Compact height h-14 */}
@@ -137,6 +149,16 @@ export const KhataHeader: React.FC<KhataHeaderProps> = ({
 
           {/* Quick CTA button */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={onOpenPartnerModal}
+              className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold px-2.5 py-1.5 rounded-lg shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+              title="10 Official Partner Integrations"
+            >
+              <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+              <span className="hidden sm:inline">10x Partners</span>
+              <span className="bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">10/10</span>
+            </button>
+
             <button
               onClick={onNewScan}
               className="bg-[#047857] hover:bg-[#065f46] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xs flex items-center gap-1.5 transition cursor-pointer"

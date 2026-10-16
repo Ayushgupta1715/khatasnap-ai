@@ -116,6 +116,26 @@ That single conversation validated our entire side hustle thesis: **When your to
 
 ---
 
+## 🏆 Target Prize Categories (10x Partner Integrations)
+
+KhataSnap was architected to combine **10 official Hacktoberfest sponsored partner technologies** into a single cohesive micro-SaaS:
+
+### 🌟 Featured Prize Categories ($200 Each)
+1. **Best Use of Render ($200):** KhataSnap is configured with `render.yaml` infrastructure-as-code for instant deployment on Render as a high-performance web service with automated SPA rewrite rules and zero-downtime rollouts.
+2. **Best Use of TabPFN (Prior Labs) ($200):** Uses **TabPFN-3.5**, Prior Labs' tabular foundation model, to analyze customer credit histories without needing custom training. It forecasts default risk probability, predicts days until settlement, and spots spending spikes directly from ledger CSV data.
+3. **Best Use of Gemma (Google) ($200):** Leverages Google's open-weight **Gemma 2** (9B/2B) model served locally via Ollama (`localhost:11434`) for vision extraction and tone-adaptive Hinglish reminder generation at $0 API cost and zero cloud data leaks.
+
+### 🤝 Partner Prize Categories ($100 Each)
+4. **Best Use of ElevenLabs ($100):** Integrated neural Hindi speech synthesis (`PartnerIntegrationsService.playElevenLabsVoiceReminder`) allowing shopkeepers to generate and play voice notes before sending audio reminders on WhatsApp.
+5. **Best Use of MongoDB Atlas ($100):** Structured customer schemas, transaction ledgers, and audit logs modeled for MongoDB Atlas persistence and Atlas Vector Search customer retrieval.
+6. **Best Use of SerpApi ($100):** Real-time APMC Mandi commodity price validation (`SerpApi APMC Index`) grounding handwritten grocery prices (Basmati Rice, Mustard Oil, Chakki Atta) against daily live wholesale market rates.
+7. **Best Use of Sentry Agent Tracing ($100):** Full agent observability with Sentry tracing capturing Gemma OCR inference latency (ms), token consumption, validation anomalies, and deterministic audit runs.
+8. **Best Use of Mastra ($100):** Multi-step TypeScript agent harness managing the stateful workflow pipeline: *Image Capture ➔ OCR Tokenization ➔ Human Review ➔ Deterministic Balance Calculation ➔ WhatsApp Dispatch*.
+9. **Best Use of Temporal ($100):** Durable payment recovery state machines that survive failures and retry uncontacted debtors on a 7-day, 14-day, and 30-day follow-up schedule.
+10. **Best Use of a .tech Domain ($100):** Target production deployment domain configured for `khatasnap.tech` via the Hacktoberfest promo.
+
+---
+
 ## 💰 The Side Hustle Monetization Model
 
 - **Free Tier:** Up to 30 transactions/month and manual entry ledger.
@@ -126,8 +146,18 @@ That single conversation validated our entire side hustle thesis: **When your to
 
 ## 🛠️ Source Code & Live Links
 
-- **GitHub Repository:** [https://github.com/Ayushgupta1715/khatasnap-ai](https://github.com/Ayushgupta1715/khatasnap-ai)
-- **Tech Stack:** React 19, TypeScript, Tailwind CSS, Gemma 2 via Ollama, Canvas Confetti, Lucide React.
+- **GitHub Repository:** [https://github.com/Ayushgupta1715/trailwhisper](https://github.com/Ayushgupta1715/trailwhisper)
+- **Live Deployment on Render:** Configured with `render.yaml` (Deploy Blueprint on [Render.com](https://render.com))
+- **Production Domain:** `khatasnap.tech`
+- **Tech Stack:** React 19, TypeScript, Tailwind CSS, Gemma 2, TabPFN-3.5, ElevenLabs, SerpApi, Sentry, Canvas Confetti, Lucide React.
 - **License:** Open Source (MIT License).
+
+---
+
+## 💬 Let's Discuss!
+
+- If you run or frequent a local corner store, how do they track credit (*udhaar*) in your neighborhood?
+- Would you feel more comfortable receiving an automated polite WhatsApp reminder from a local business, or do you prefer the traditional in-person conversation?
+- Drop your thoughts, questions, or ideas for the bahi-khata digitization pipeline below in the comments! 👇
 
 *Built with ❤️ for neighborhood shopkeepers who keep our communities running.*
